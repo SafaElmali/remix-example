@@ -6,6 +6,7 @@ import { CharacterImage } from "./_components/character-image";
 import { CharacterName } from "./_components/character-name";
 import { CharacterSpecies } from "./_components/character-species";
 import { CharacterLocation } from "./_components/character-location";
+import UrlUtil from "@/lib/urls";
 
 type CharacterCardProps = {
   character: Character;
@@ -14,7 +15,7 @@ type CharacterCardProps = {
 const CharacterCard: FC<CharacterCardProps> = ({ character }) => {
   return (
     <Link
-      to={`/rick-and-morty/${character.id}`}
+      to={UrlUtil.buildRickAndMortyCharacterUrl(character.id.toString())}
       className="block border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-1"
     >
       <CharacterImage

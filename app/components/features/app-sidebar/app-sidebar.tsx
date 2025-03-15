@@ -11,17 +11,18 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { NavLink } from "@remix-run/react";
+import UrlUtil from "@/lib/urls";
 
 // Menu items.
 const items = [
   {
     title: "Home",
-    url: "/",
+    url: UrlUtil.buildRootUrl(),
     icon: Home,
   },
   {
     title: "Rick and Morty",
-    url: "/rick-and-morty",
+    url: UrlUtil.buildRickAndMortyUrl(),
     icon: Inbox,
   },
 ];
