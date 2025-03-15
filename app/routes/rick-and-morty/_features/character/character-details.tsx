@@ -1,14 +1,12 @@
 import { FC } from "react";
 import type { Character } from "@/routes/rick-and-morty/_types/types";
-import {
-  CharacterGender,
-  CharacterImage,
-  CharacterLocation,
-  CharacterName,
-  CharacterOrigin,
-  CharacterSpecies,
-  CharacterStatus,
-} from "./_components";
+import { CharacterStatus } from "./_components/character-status";
+import { CharacterImage } from "./_components/character-image";
+import { CharacterName } from "./_components/character-name";
+import { CharacterLocation } from "./_components/character-location";
+import { CharacterGender } from "./_components/character-gender";
+import { CharacterSpecies } from "./_components/character-species";
+import { CharacterOrigin } from "./_components/character-origin";
 
 interface CharacterDetailsProps {
   character: Character;
