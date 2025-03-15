@@ -1,6 +1,6 @@
 import { json } from "@remix-run/node";
 import { MetaFunction, useLoaderData } from "@remix-run/react";
-import { CharacterCard } from "./_features/character-card/character-card";
+import { CharacterCard } from "./_features/character/character-card";
 import { getCharacters } from "./_services/rick-and-morty.service";
 
 export const meta: MetaFunction = () => {

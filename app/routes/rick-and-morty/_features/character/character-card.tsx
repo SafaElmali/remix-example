@@ -1,4 +1,5 @@
 import { FC } from "react";
+import { Link } from "@remix-run/react";
 import type { Character } from "@/routes/rick-and-morty/_types/types";
 import {
   CharacterImage,
@@ -14,7 +15,10 @@ type CharacterCardProps = {
 
 const CharacterCard: FC<CharacterCardProps> = ({ character }) => {
   return (
-    <div className="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+    <Link 
+      to={`/rick-and-morty/${character.id}`}
+      className="block border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-1"
+    >
       <CharacterImage
         src={character.image}
         alt={character.name}
@@ -26,7 +30,7 @@ const CharacterCard: FC<CharacterCardProps> = ({ character }) => {
         <CharacterSpecies species={character.species} />
         <CharacterLocation location={character.location} />
       </div>
-    </div>
+    </Link>
   );
 };
 

@@ -44,10 +44,28 @@ const CharacterLocation: FC<CharacterLocationProps> = ({ location }) => {
   return <p className="text-gray-600">Location: {location.name}</p>;
 };
 
+type CharacterGenderProps = {
+  gender: string;
+};
+
+const CharacterGender: FC<CharacterGenderProps> = ({ gender }) => {
+  return <p className="text-gray-600">Gender: {gender}</p>;
+};
+
+type CharacterOriginProps = {
+  origin: Location;
+};
+
+const CharacterOrigin: FC<CharacterOriginProps> = ({ origin }) => {
+  return <p className="text-gray-600">Origin: {origin.name}</p>;
+};
+
 export {
   CharacterImage,
   CharacterName,
   CharacterStatus,
   CharacterSpecies,
   CharacterLocation,
+  CharacterGender,
+  CharacterOrigin,
 };

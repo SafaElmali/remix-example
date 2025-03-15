@@ -19,6 +19,13 @@ export default defineConfig({
         v3_singleFetch: true,
         v3_lazyRouteDiscovery: true,
       },
+      routes(defineRoutes) {
+        return defineRoutes((route) => {
+          route("/", "routes/_index.tsx");
+          route("/rick-and-morty", "routes/rick-and-morty/route.tsx");
+          route("/rick-and-morty/:characterId", "routes/rick-and-morty/$characterId/route.tsx");
+        });
+      },
     }),
     tsconfigPaths(),
   ],
