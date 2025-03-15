@@ -6,9 +6,9 @@ const statusBadgeVariants = cva(
   {
     variants: {
       status: {
-        alive: "bg-green-100 text-green-800 border-green-200",
-        dead: "bg-red-100 text-red-800 border-red-200",
-        unknown: "bg-gray-100 text-gray-800 border-gray-200",
+        Alive: "bg-green-100 text-green-800 border-green-200",
+        Dead: "bg-red-100 text-red-800 border-red-200",
+        Unknown: "bg-gray-100 text-gray-800 border-gray-200",
       },
       size: {
         sm: "text-xs px-2 py-0.5",
@@ -17,14 +17,14 @@ const statusBadgeVariants = cva(
       },
     },
     defaultVariants: {
-      status: "unknown",
+      status: "Unknown",
       size: "sm",
     },
   }
 );
 
 type CharacterStatusProps = {
-  status: "alive" | "dead" | "unknown";
+  status: "Alive" | "Dead" | "Unknown";
   size?: "sm" | "md" | "lg";
 };
 

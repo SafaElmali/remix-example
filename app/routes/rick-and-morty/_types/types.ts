@@ -1,7 +1,7 @@
 export type Character = {
   id: number;
   name: string;
-  status: "alive" | "dead" | "unknown";
+  status: "Alive" | "Dead" | "Unknown";
   species: string;
   type: string;
   gender: string;
