@@ -6,6 +6,8 @@ import {
   ScrollRestoration,
 } from "@remix-run/react";
 import "@/styles/tailwind.css";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/features/app-sidebar/app-sidebar";
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -17,7 +19,13 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
         <Links />
       </head>
       <body>
-        {children}
+        <SidebarProvider>
+          <AppSidebar />
+          <main className="w-full">
+            <SidebarTrigger />
+            {children}
+          </main>
+        </SidebarProvider>
         <ScrollRestoration />
         <Scripts />
       </body>
