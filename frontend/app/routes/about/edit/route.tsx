@@ -88,7 +88,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   }
 };
 
-export default function AboutAdmin() {
+const AboutAdmin = () => {
   const { about, error } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
@@ -173,4 +173,6 @@ export default function AboutAdmin() {
       </Card>
     </div>
   );
-}
+};
+
+export default AboutAdmin;
