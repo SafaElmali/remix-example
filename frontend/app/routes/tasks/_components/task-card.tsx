@@ -39,7 +39,6 @@ type TaskCardProps = {
 };
 
 const TaskCard: FC<TaskCardProps> = ({ task, onDelete }) => {
-  const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const updateFetcher = useTaskUpdate();
   const deleteFetcher = useTaskDelete();
@@ -77,9 +76,7 @@ const TaskCard: FC<TaskCardProps> = ({ task, onDelete }) => {
 
   // Handle delete confirmation
   const confirmDelete = () => {
-    if (isDeleting) return;
-
-    setIsDeleting(true);
+    if (deleteFetcher.state !== "idle") return;
 
     if (onDelete) {
       onDelete(task.id);
@@ -94,13 +91,13 @@ const TaskCard: FC<TaskCardProps> = ({ task, onDelete }) => {
     );
   };
 
-  // Reset deleting state when delete operation completes
+  // Show success toast when delete operation completes
   useEffect(() => {
-    if (deleteFetcher.state === "idle" && isDeleting) {
-      setIsDeleting(false);
+    if (deleteFetcher.state === "idle" && deleteFetcher.data?.success) {
       toast.success("Task deleted successfully");
+      setShowDeleteDialog(false);
     }
-  }, [deleteFetcher.state, isDeleting]);
+  }, [deleteFetcher.state, deleteFetcher.data]);
 
   // Get status icon
   const getStatusIcon = (status: TaskStatus) => {
@@ -161,7 +158,7 @@ const TaskCard: FC<TaskCardProps> = ({ task, onDelete }) => {
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 text-red-500 hover:text-red-700"
-                disabled={isDeleting || deleteFetcher.state !== "idle"}
+                disabled={deleteFetcher.state !== "idle"}
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
@@ -180,7 +177,7 @@ const TaskCard: FC<TaskCardProps> = ({ task, onDelete }) => {
                   onClick={confirmDelete}
                   className="bg-red-600 hover:bg-red-700"
                 >
-                  {isDeleting ? "Deleting..." : "Delete"}
+                  {deleteFetcher.state !== "idle" ? "Deleting..." : "Delete"}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>

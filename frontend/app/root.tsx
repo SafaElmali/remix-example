@@ -8,6 +8,7 @@ import {
 import "@/styles/tailwind.css";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/features/app-sidebar/app-sidebar";
+import { Toaster } from "sonner";
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -22,6 +23,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
         <SidebarProvider>
           <AppSidebar />
           <main className="w-full">
+            <Toaster />
             <SidebarTrigger />
             {children}
           </main>
