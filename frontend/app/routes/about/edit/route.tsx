@@ -12,27 +12,27 @@ import {
   getAboutDetails,
   updateAboutDetails,
 } from "../_services/about.service";
-import TipTapEditor from "../../../components/TipTapEditor";
+import TipTapEditor from "@/components/TipTapEditor";
 import { useState } from "react";
-import { Button } from "../../../components/ui/button";
-import { Input } from "../../../components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "../../../components/ui/card";
-import { Separator } from "../../../components/ui/separator";
-import { Label } from "../../../components/ui/label";
-import { Textarea } from "../../../components/ui/textarea";
-import UrlUtil from "../../../lib/urls";
+} from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import UrlUtil from "@/lib/urls";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from "../../../components/ui/dialog";
+} from "@/components/ui/dialog";
 
 export const meta: MetaFunction = () => {
   return [
