@@ -1,7 +1,7 @@
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, type MetaFunction } from "@remix-run/react";
-import { getCharacter } from "@/routes/rick-and-morty/_services/rick-and-morty.service";
-import { CharacterDetails } from "@/routes/rick-and-morty/_features/character/character-details";
+import { getCharacter } from "../_services/rick-and-morty.service";
+import { CharacterDetails } from "../_features/character/character-details";
 import { motion } from "framer-motion";
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {

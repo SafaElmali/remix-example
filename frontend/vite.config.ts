@@ -21,11 +21,16 @@ export default defineConfig({
       },
       routes(defineRoutes) {
         return defineRoutes((route) => {
-          route("/", "routes/_index.tsx");
-          route("/rick-and-morty", "routes/rick-and-morty/route.tsx");
-          route("/rick-and-morty/:characterId", "routes/rick-and-morty/$characterId/route.tsx");
-          route("/about", "routes/about/route.tsx");
-          route("/about/edit", "routes/about/edit/route.tsx");
+          route("/", "routes/_index.tsx", { index: true });
+          route("about", "routes/about/route.tsx");
+          route("about/edit", "routes/about/edit/route.tsx");
+          route("tasks", "routes/tasks/route.tsx");
+          
+          // Nested routes for Rick and Morty
+          route("rick-and-morty", "routes/rick-and-morty/layout.tsx", () => {
+            route("", "routes/rick-and-morty/route.tsx", { index: true });
+            route(":characterId", "routes/rick-and-morty/$characterId/route.tsx");
+          });
         });
       },
     }),
