@@ -22,9 +22,13 @@ export default defineConfig({
       routes(defineRoutes) {
         return defineRoutes((route) => {
           route("/", "routes/_index.tsx", { index: true });
-          route("about", "routes/about/route.tsx");
-          route("about/edit", "routes/about/edit/route.tsx");
           route("tasks", "routes/tasks/route.tsx");
+          
+          // Nested routes for About
+          route("about", "routes/about/layout.tsx", () => {
+            route("", "routes/about/route.tsx", { index: true });
+            route("edit", "routes/about/edit/route.tsx");
+          });
           
           // Nested routes for Rick and Morty
           route("rick-and-morty", "routes/rick-and-morty/layout.tsx", () => {
