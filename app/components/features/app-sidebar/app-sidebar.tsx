@@ -1,4 +1,4 @@
-import { Home, Inbox } from "lucide-react";
+import { Home, PersonStanding, Users } from "lucide-react";
 
 import {
   Sidebar,
@@ -23,7 +23,12 @@ const items = [
   {
     title: "Rick and Morty",
     url: UrlUtil.buildRickAndMortyUrl(),
-    icon: Inbox,
+    icon: Users,
+  },
+  {
+    title: "About",
+    url: UrlUtil.buildAboutUrl(),
+    icon: PersonStanding,
   },
 ];
 

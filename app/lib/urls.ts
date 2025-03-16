@@ -10,6 +10,10 @@ class UrlUtil {
   static buildRickAndMortyCharacterUrl(characterId: string) {
     return `/rick-and-morty/${characterId}`;
   }
+
+  static buildAboutUrl() {  
+    return `/about`;
+  }
 }
 
 export default UrlUtil;
