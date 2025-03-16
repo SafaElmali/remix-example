@@ -3,5 +3,5 @@ class About < ApplicationRecord
   
   validates :title, presence: true
   validates :description, presence: true
-  # content can be optional
+  validates :content, presence: true
 end
