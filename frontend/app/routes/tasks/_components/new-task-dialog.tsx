@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
@@ -38,6 +38,10 @@ const NewTaskDialog = () => {
 
     // Submit the form data
     fetcher.submit(formData, { method: "post" });
+
+    // Close the dialog
+    setOpen(false);
+    toast.success("Task created successfully");
   };
 
   // Handle dialog close
@@ -49,14 +53,6 @@ const NewTaskDialog = () => {
       formRef.current.reset();
     }
   };
-
-  // Handle successful task creation
-  useEffect(() => {
-    if (fetcher.state === "idle" && fetcher.data && open) {
-      setOpen(false);
-      toast.success("Task created successfully");
-    }
-  }, [fetcher.state, fetcher.data, open]);
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -137,4 +133,4 @@ const NewTaskDialog = () => {
   );
 };
 
-export { NewTaskDialog }
+export { NewTaskDialog };

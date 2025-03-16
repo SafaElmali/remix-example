@@ -106,7 +106,6 @@ const TasksPage: FC = () => {
 
   return (
     <div className="container mx-auto py-8 px-4">
-      <Toaster position="top-right" />
 
       <div className="flex justify-between items-center mb-8">
         <div>
