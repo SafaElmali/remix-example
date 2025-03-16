@@ -5,11 +5,14 @@ import {
   useSearchParams,
   useSubmit,
   Form,
+  useNavigation,
 } from "@remix-run/react";
 import { CharacterCard } from "./_features/character/character-card";
 import { getCharacters } from "./_services/rick-and-morty.service";
 import { useDebounce } from "@/hooks/use-debounce";
 import { Input } from "@/components/ui/input";
+import { useState, useEffect } from "react";
+import type { Character } from "./_types/types";
 
 export const meta: MetaFunction = () => {
   return [
@@ -28,27 +31,56 @@ export const meta: MetaFunction = () => {
   ];
 };
 
+type LoaderData = {
+  characters: { results: Character[] };
+  search: string;
+  error: string | null;
+};
+
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const url = new URL(request.url);
-  const search = url.searchParams.get("search") || "";
-  const characters = await getCharacters(search);
-  return json({ characters, search });
+  try {
+    const search = url.searchParams.get("search") || "";
+    const characters = await getCharacters(search);
+    return json({ characters, search, error: null });
+  } catch (error) {
+    return json({
+      characters: { results: [] },
+      search: url.searchParams.get("search") || "",
+      error: "Failed to fetch characters",
+    });
+  }
 };
 
 const RickAndMortyPage = () => {
-  const { characters, search } = useLoaderData<typeof loader>();
+  const { characters, search, error } = useLoaderData<
+    typeof loader
+  >() as LoaderData;
   const [searchParams, setSearchParams] = useSearchParams();
+  const [inputValue, setInputValue] = useState(search || "");
   const submit = useSubmit();
+  const navigation = useNavigation();
+  const isLoading = navigation.state === "loading";
 
-  // Debounce search input to avoid too many requests
-  const debouncedSubmit = useDebounce((form: HTMLFormElement) => {
-    submit(form);
-  }, 300);
+  // Update input value when search parameter changes (e.g., when navigating)
+  useEffect(() => {
+    setInputValue(search || "");
+  }, [search]);
+
+  const debouncedSubmit = useDebounce((value: string) => {
+    const isFirstSearch = searchParams.get("search") === null;
+    setSearchParams({ search: value }, { replace: isFirstSearch });
+
+    // Create and submit a form with the debounced value
+    const formData = new FormData();
+    formData.append("search", value);
+    submit(formData, { method: "get", replace: true });
+  }, 500);
 
   const onSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const isFirstSearch = searchParams.get("search") === null;
-    setSearchParams({ search: e.target.value }, { replace: isFirstSearch });
-    debouncedSubmit(e.currentTarget.form!);
+    const newValue = e.target.value;
+    setInputValue(newValue);
+    debouncedSubmit(newValue);
   };
 
   return (
@@ -68,16 +100,20 @@ const RickAndMortyPage = () => {
             type="search"
             name="search"
             placeholder="Search characters..."
-            defaultValue={search}
+            value={inputValue}
             onChange={onSearchChange}
-            className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:border-transparent"
           />
         </Form>
       </div>
 
-      {characters.results.length === 0 ? (
+      {isLoading ? (
+        <div className="text-center text-gray-500 py-8">Loading...</div>
+      ) : error ? (
+        <div className="text-center text-red-500 py-8">{error}</div>
+      ) : !characters?.results?.length ? (
         <div className="text-center text-gray-500 py-8">
-          No characters found matching &quot;{search}&quot;
+          No characters found {search && `matching "${search}"`}
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
