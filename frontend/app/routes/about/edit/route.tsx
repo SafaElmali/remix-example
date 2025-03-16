@@ -5,6 +5,7 @@ import {
   Form,
   useNavigation,
   MetaFunction,
+  useFetcher,
 } from "@remix-run/react";
 import type { ActionFunctionArgs } from "@remix-run/node";
 import {
@@ -25,6 +26,13 @@ import { Separator } from "../../../components/ui/separator";
 import { Label } from "../../../components/ui/label";
 import { Textarea } from "../../../components/ui/textarea";
 import UrlUtil from "../../../lib/urls";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "../../../components/ui/dialog";
 
 export const meta: MetaFunction = () => {
   return [
@@ -65,6 +73,26 @@ export const loader = async () => {
 // Action function to handle form submission
 export const action = async ({ request }: ActionFunctionArgs) => {
   const formData = await request.formData();
+  const intent = formData.get("intent");
+  
+  if (intent === "preview") {
+    // For preview, we just return the data without saving to the database
+    const title = formData.get("title") as string;
+    const description = formData.get("description") as string;
+    const content = formData.get("content") as string;
+    
+    return json({
+      preview: {
+        title,
+        description,
+        content,
+      },
+      error: null,
+      fields: null,
+    });
+  }
+  
+  // Regular save action
   const title = formData.get("title") as string;
   const description = formData.get("description") as string;
   const content = formData.get("content") as string;
@@ -82,6 +110,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   } catch (error) {
     console.error("Error updating about data:", error);
     return json({
+      preview: null,
       error: "Failed to update about page data",
       fields: { title, description, content },
     });
@@ -96,6 +125,28 @@ const AboutAdmin = () => {
 
   // We only need state for the editor content since it's not directly bound to a form field
   const [editorContent, setEditorContent] = useState(about.content || "");
+  
+  // Initialize fetcher for preview functionality
+  const previewFetcher = useFetcher<typeof action>();
+  const isPreviewLoading = previewFetcher.state !== "idle";
+  const previewData = previewFetcher.data?.preview;
+  
+  // State for dialog open/close
+  const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
+  
+  // Handle preview submission
+  const handlePreview = () => {
+    const formData = new FormData();
+    formData.append("title", document.querySelector<HTMLInputElement>("[name='title']")?.value || "");
+    formData.append("description", document.querySelector<HTMLTextAreaElement>("[name='description']")?.value || "");
+    formData.append("content", editorContent);
+    formData.append("intent", "preview");
+    
+    previewFetcher.submit(formData, { method: "post" });
+    
+    // Open the dialog when we start fetching the preview
+    setPreviewDialogOpen(true);
+  };
 
   return (
     <div className="max-w-4xl mx-auto p-6">
@@ -160,15 +211,61 @@ const AboutAdmin = () => {
             <Separator className="my-4" />
 
             <div className="flex justify-between">
-              <Button type="submit" disabled={isSubmitting} className="w-32">
-                {isSubmitting ? "Saving..." : "Save Changes"}
-              </Button>
+              <div className="space-x-2">
+                <Button type="submit" disabled={isSubmitting} className="w-32">
+                  {isSubmitting ? "Saving..." : "Save Changes"}
+                </Button>
+                
+                <Button 
+                  type="button" 
+                  variant="secondary" 
+                  disabled={isPreviewLoading}
+                  onClick={handlePreview}
+                  className="w-32"
+                >
+                  {isPreviewLoading ? "Loading..." : "Preview"}
+                </Button>
+              </div>
 
               <Button variant="outline" className="w-32" asChild>
                 <a href="/about">Cancel</a>
               </Button>
             </div>
           </Form>
+          
+          {/* Preview Dialog */}
+          <Dialog open={previewDialogOpen} onOpenChange={setPreviewDialogOpen}>
+            <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Preview</DialogTitle>
+                <DialogDescription>
+                  Preview of how your About page will look
+                </DialogDescription>
+              </DialogHeader>
+              
+              {isPreviewLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                </div>
+              ) : previewData ? (
+                <div className="mt-4">
+                  <h1 className="text-3xl font-bold mb-2">{previewData.title}</h1>
+                  <p className="text-gray-600 mb-6">{previewData.description}</p>
+                  
+                  <Separator className="my-4" />
+                  
+                  <div 
+                    className="prose max-w-none"
+                    dangerouslySetInnerHTML={{ __html: previewData.content }}
+                  />
+                </div>
+              ) : (
+                <div className="py-4 text-center text-gray-500">
+                  No preview data available
+                </div>
+              )}
+            </DialogContent>
+          </Dialog>
         </CardContent>
       </Card>
     </div>
