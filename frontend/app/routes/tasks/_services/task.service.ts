@@ -1,109 +1,106 @@
-import { Task } from "../_types/task";
+import { Task, TaskCreateInput, TaskUpdateInput } from "../_types/task";
 
-/**
- * Fetches all tasks from the API
- * @returns Promise with an array of tasks
- */
-export const getTasks = async (): Promise<Task[]> => {
-  // For demo purposes, we'll simulate an API response
-  // In a real application, this would be:
-  // const response = await axios.get(`${API_BASE_URL}/tasks`);
-  // return response.data;
-  
-  // Simulated delay
-  await new Promise(resolve => setTimeout(resolve, 500));
-  
-  return MOCK_TASKS;
-};
+export const TasksService = {
+  getTasks: async (): Promise<Task[]> => {
+    // For demo purposes, we'll simulate an API response
+    // In a real application with a real backend:
+    // const response = await apiClient.get("/tasks");
+    // return response.data;
+    
+    // Simulated delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    return MOCK_TASKS;
+  },
 
-/**
- * Creates a new task
- * @param taskData - The task data to create
- * @returns Promise with the created task
- */
-export const createTask = async (taskData: Partial<Task>): Promise<Task> => {
-  // For demo purposes, we'll simulate an API response
-  // In a real application, this would be:
-  // const response = await axios.post(`${API_BASE_URL}/tasks`, { task: taskData });
-  // return response.data;
-  
-  // Simulated delay
-  await new Promise(resolve => setTimeout(resolve, 500));
-  
-  const newTask: Task = {
-    id: Math.max(0, ...MOCK_TASKS.map(t => t.id)) + 1,
-    title: taskData.title || "",
-    description: taskData.description || "",
-    status: taskData.status || "pending",
-    priority: taskData.priority || "medium",
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  };
-  
-  // Add to our mock data
-  MOCK_TASKS.push(newTask);
-  
-  return newTask;
-};
+  getTask: async (id: number): Promise<Task> => {
+    // For demo purposes, we'll simulate an API response
+    // In a real application with a real backend:
+    // const response = await apiClient.get(`/tasks/${id}`);
+    // return response.data;
+    
+    // Simulated delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    const task = MOCK_TASKS.find(task => task.id === id);
+    
+    if (!task) {
+      throw new Error(`Task with ID ${id} not found`);
+    }
+    
+    return task;
+  },
 
-/**
- * Updates a task
- * @param id - The ID of the task to update
- * @param taskData - The updated task data
- * @returns Promise with the updated task
- */
-export const updateTask = async (id: number, taskData: Partial<Task>): Promise<Task> => {
-  // For demo purposes, we'll simulate an API response
-  // In a real application, this would be:
-  // const response = await axios.put(`${API_BASE_URL}/tasks/${id}`, { task: taskData });
-  // return response.data;
-  
-  // Simulated delay
-  await new Promise(resolve => setTimeout(resolve, 500));
-  
-  const taskIndex = MOCK_TASKS.findIndex(task => task.id === id);
-  
-  if (taskIndex === -1) {
-    throw new Error(`Task with ID ${id} not found`);
+  createTask: async (data: TaskCreateInput): Promise<Task> => {
+    // For demo purposes, we'll simulate an API response
+    // In a real application with a real backend:
+    // const response = await apiClient.post("/tasks", { task: data });
+    // return response.data;
+    
+    // Simulated delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    const newTask: Task = {
+      id: Math.max(0, ...MOCK_TASKS.map(t => t.id)) + 1,
+      ...data,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    
+    // Add to our mock data
+    MOCK_TASKS.push(newTask);
+    
+    return newTask;
+  },
+
+  updateTask: async (id: number, data: TaskUpdateInput): Promise<Task> => {
+    // For demo purposes, we'll simulate an API response
+    // In a real application with a real backend:
+    // const response = await apiClient.put(`/tasks/${id}`, { task: data });
+    // return response.data;
+    
+    // Simulated delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    const taskIndex = MOCK_TASKS.findIndex(task => task.id === id);
+    
+    if (taskIndex === -1) {
+      throw new Error(`Task with ID ${id} not found`);
+    }
+    
+    // Update the task
+    const updatedTask: Task = {
+      ...MOCK_TASKS[taskIndex],
+      ...data,
+      updated_at: new Date().toISOString()
+    };
+    
+    // Replace in our mock data
+    MOCK_TASKS[taskIndex] = updatedTask;
+    
+    return updatedTask;
+  },
+
+  deleteTask: async (id: number): Promise<{ success: boolean }> => {
+    // For demo purposes, we'll simulate an API response
+    // In a real application with a real backend:
+    // const response = await apiClient.delete(`/tasks/${id}`);
+    // return response.data;
+    
+    // Simulated delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    const taskIndex = MOCK_TASKS.findIndex(task => task.id === id);
+    
+    if (taskIndex === -1) {
+      throw new Error(`Task with ID ${id} not found`);
+    }
+    
+    // Remove from our mock data
+    MOCK_TASKS.splice(taskIndex, 1);
+    
+    return { success: true };
   }
-  
-  // Update the task
-  const updatedTask: Task = {
-    ...MOCK_TASKS[taskIndex],
-    ...taskData,
-    updated_at: new Date().toISOString()
-  };
-  
-  // Replace in our mock data
-  MOCK_TASKS[taskIndex] = updatedTask;
-  
-  return updatedTask;
-};
-
-/**
- * Deletes a task
- * @param id - The ID of the task to delete
- * @returns Promise with success status
- */
-export const deleteTask = async (id: number): Promise<{ success: boolean }> => {
-  // For demo purposes, we'll simulate an API response
-  // In a real application, this would be:
-  // const response = await axios.delete(`${API_BASE_URL}/tasks/${id}`);
-  // return response.data;
-  
-  // Simulated delay
-  await new Promise(resolve => setTimeout(resolve, 500));
-  
-  const taskIndex = MOCK_TASKS.findIndex(task => task.id === id);
-  
-  if (taskIndex === -1) {
-    throw new Error(`Task with ID ${id} not found`);
-  }
-  
-  // Remove from our mock data
-  MOCK_TASKS.splice(taskIndex, 1);
-  
-  return { success: true };
 };
 
 // Mock data for demonstration purposes
