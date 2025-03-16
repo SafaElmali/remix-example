@@ -13,6 +13,7 @@ import { useDebounce } from "@/hooks/use-debounce";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
 import type { Character } from "./_types/types";
+import { motion, AnimatePresence } from "framer-motion";
 
 export const meta: MetaFunction = () => {
   return [
@@ -84,17 +85,23 @@ const RickAndMortyPage = () => {
   };
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">
+    <motion.div
+      className="p-6"
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+      variants={containerVariants}
+    >
+      <motion.h1 className="text-2xl font-bold mb-6" variants={itemVariants}>
         Rick and Morty Characters
         {search && (
           <span className="text-gray-500 ml-2">
             searching for &quot;{search}&quot;
           </span>
         )}
-      </h1>
+      </motion.h1>
 
-      <div className="max-w-xl mb-8">
+      <motion.div className="max-w-xl mb-8" variants={itemVariants}>
         <Form method="get" className="relative">
           <Input
             type="search"
@@ -105,25 +112,107 @@ const RickAndMortyPage = () => {
             className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:border-transparent"
           />
         </Form>
-      </div>
+      </motion.div>
 
-      {isLoading ? (
-        <div className="text-center text-gray-500 py-8">Loading...</div>
-      ) : error ? (
-        <div className="text-center text-red-500 py-8">{error}</div>
-      ) : !characters?.results?.length ? (
-        <div className="text-center text-gray-500 py-8">
-          No characters found {search && `matching "${search}"`}
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {characters.results.map((character) => (
-            <CharacterCard key={character.id} character={character} />
-          ))}
-        </div>
-      )}
-    </div>
+      <AnimatePresence mode="wait">
+        {isLoading ? (
+          <motion.div
+            key="loading"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="text-center text-gray-500 py-8"
+          >
+            Loading...
+          </motion.div>
+        ) : error ? (
+          <motion.div
+            key="error"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="text-center text-red-500 py-8"
+          >
+            {error}
+          </motion.div>
+        ) : !characters?.results?.length ? (
+          <motion.div
+            key="no-results"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="text-center text-gray-500 py-8"
+          >
+            No characters found {search && `matching "${search}"`}
+          </motion.div>
+        ) : (
+          <motion.div
+            key="results"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+            variants={containerVariants}
+          >
+            {characters.results.map((character, index) => (
+              <motion.div
+                key={character.id}
+                variants={cardVariants}
+                custom={index}
+                layout
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                whileHover={{ y: -5, transition: { duration: 0.2 } }}
+              >
+                <CharacterCard character={character} />
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 };
 
 export default RickAndMortyPage;
+
+// Animation variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.2,
+    },
+  },
+  exit: {
+    opacity: 0,
+    transition: { duration: 0.2 },
+  },
+};
+
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: {
+      type: "spring",
+      stiffness: 100,
+      damping: 12,
+    },
+  },
+};
+
+const cardVariants = {
+  hidden: { scale: 0.8, opacity: 0 },
+  visible: (i: number) => ({
+    scale: 1,
+    opacity: 1,
+    transition: {
+      type: "spring",
+      stiffness: 80,
+      delay: i * 0.05,
+    },
+  }),
+  exit: { scale: 0.8, opacity: 0, transition: { duration: 0.2 } },
+};
