@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { json, redirect } from "@remix-run/node";
 import {
   useLoaderData,
@@ -8,8 +7,24 @@ import {
   MetaFunction,
 } from "@remix-run/react";
 import type { ActionFunctionArgs } from "@remix-run/node";
-import axios from "axios";
-import TipTapEditor from "@/components/TipTapEditor";
+import {
+  getAboutDetails,
+  updateAboutDetails,
+} from "../_services/about.service";
+import TipTapEditor from "../../../components/TipTapEditor";
+import { useState } from "react";
+import { Button } from "../../../components/ui/button";
+import { Input } from "../../../components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../../../components/ui/card";
+import { Separator } from "../../../components/ui/separator";
+import { Label } from "../../../components/ui/label";
+import { Textarea } from "../../../components/ui/textarea";
+import UrlUtil from "../../../lib/urls";
 
 export const meta: MetaFunction = () => {
   return [
@@ -24,28 +39,24 @@ export const meta: MetaFunction = () => {
 // Loader function to fetch the current about page data
 export const loader = async () => {
   try {
-    // Get CSRF token by making a GET request with credentials
-    const response = await axios.get("http://localhost:3001/api/v1/about", {
-      withCredentials: true,
-    });
-
-    // Extract CSRF token from headers
-    const csrfToken = response.headers["x-csrf-token"];
+    // Use the service to get about details
+    const aboutData = await getAboutDetails();
 
     return json({
-      about: response.data,
-      csrfToken,
+      about: aboutData,
       error: null,
     });
   } catch (error) {
     console.error("Error fetching about data:", error);
     return json({
       about: {
+        id: 0,
         title: "",
         description: "",
         content: "",
+        created_at: "",
+        updated_at: "",
       },
-      csrfToken: "",
       error: "Failed to load about page data",
     });
   }
@@ -57,30 +68,17 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const title = formData.get("title") as string;
   const description = formData.get("description") as string;
   const content = formData.get("content") as string;
-  const csrfToken = formData.get("csrfToken") as string;
   const aboutId = formData.get("aboutId") as string;
 
   try {
-    // Update the about page data
-    await axios.put(
-      `http://localhost:3001/api/v1/about/${aboutId}`,
-      {
-        about: {
-          title,
-          description,
-          content,
-        },
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRF-Token": csrfToken,
-        },
-        withCredentials: true,
-      }
-    );
+    // Use the service to update about details
+    await updateAboutDetails(parseInt(aboutId), {
+      title,
+      description,
+      content,
+    });
 
-    return redirect("/about");
+    return redirect(UrlUtil.buildAboutUrl());
   } catch (error) {
     console.error("Error updating about data:", error);
     return json({
@@ -91,109 +89,88 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 };
 
 export default function AboutAdmin() {
-  const { about, csrfToken, error } = useLoaderData<typeof loader>();
+  const { about, error } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
   const isSubmitting = navigation.state === "submitting";
 
-  const [title, setTitle] = useState(about.title || "");
-  const [description, setDescription] = useState(about.description || "");
+  // We only need state for the editor content since it's not directly bound to a form field
   const [editorContent, setEditorContent] = useState(about.content || "");
-
-  useEffect(() => {
-    if (about) {
-      setTitle(about.title || "");
-      setDescription(about.description || "");
-      setEditorContent(about.content || "");
-    }
-  }, [about]);
 
   return (
     <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">Edit About Page</h1>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-3xl font-bold">Edit About Page</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+              {error}
+            </div>
+          )}
 
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          {error}
-        </div>
-      )}
+          {actionData?.error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+              {actionData.error}
+            </div>
+          )}
 
-      {actionData?.error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          {actionData.error}
-        </div>
-      )}
+          <Form method="post" className="space-y-6">
+            <Input type="hidden" name="aboutId" value={about.id} />
+            <Input type="hidden" name="content" value={editorContent} />
 
-      <Form method="post" className="space-y-6">
-        <input type="hidden" name="csrfToken" value={csrfToken} />
-        <input type="hidden" name="aboutId" value={about.id} />
-        <input type="hidden" name="content" value={editorContent} />
+            <div className="space-y-2">
+              <Label htmlFor="title">Title</Label>
+              <Input
+                type="text"
+                id="title"
+                name="title"
+                defaultValue={about.title || ""}
+                className="w-full"
+                required
+              />
+            </div>
 
-        <div>
-          <label
-            htmlFor="title"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
-            Title
-          </label>
-          <input
-            type="text"
-            id="title"
-            name="title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-            required
-          />
-        </div>
+            <div className="space-y-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                name="description"
+                defaultValue={about.description || ""}
+                rows={4}
+                className="w-full"
+                required
+              />
+            </div>
 
-        <div>
-          <label
-            htmlFor="description"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
-            Description
-          </label>
-          <textarea
-            id="description"
-            name="description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            rows={3}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-            required
-          />
-        </div>
+            <div className="space-y-2">
+              <Label htmlFor="tiptap-editor">Content</Label>
+              <div
+                id="tiptap-editor"
+                className="border border-input rounded-md overflow-hidden"
+              >
+                <TipTapEditor
+                  content={editorContent}
+                  onChange={setEditorContent}
+                />
+              </div>
+            </div>
 
-        <div>
-          <label
-            htmlFor="tiptap-editor"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
-            Content
-          </label>
-          <div id="tiptap-editor">
-            <TipTapEditor content={editorContent} onChange={setEditorContent} />
-          </div>
-        </div>
+            <Separator className="my-4" />
 
-        <div className="flex justify-between">
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
-          >
-            {isSubmitting ? "Saving..." : "Save Changes"}
-          </button>
+            <div className="flex justify-between">
+              <Button type="submit" disabled={isSubmitting} className="w-32">
+                {isSubmitting ? "Saving..." : "Save Changes"}
+              </Button>
 
-          <a
-            href="/about"
-            className="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          >
-            Cancel
-          </a>
-        </div>
-      </Form>
+              <Button variant="outline" className="w-32" asChild>
+                <a href="/about">Cancel</a>
+              </Button>
+            </div>
+          </Form>
+        </CardContent>
+      </Card>
     </div>
   );
 }

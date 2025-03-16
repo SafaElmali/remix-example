@@ -1,7 +1,7 @@
 import { json } from "@remix-run/node";
 import { useLoaderData, Link, MetaFunction } from "@remix-run/react";
 import { motion } from "framer-motion";
-import axios from "axios";
+import { getAboutDetails } from "./_services/about.service";
 
 export const meta: MetaFunction = () => {
   return [
@@ -24,8 +24,8 @@ export const meta: MetaFunction = () => {
 // Loader function to fetch the about page data from the API
 export const loader = async () => {
   try {
-    const response = await axios.get("http://localhost:3001/api/v1/about");
-    return json({ about: response.data, error: null });
+    const response = await getAboutDetails();
+    return json({ about: response, error: null });
   } catch (error) {
     console.error("Error fetching about data:", error);
     return json({
@@ -75,15 +75,7 @@ const About = () => {
           className="text-gray-700 mb-4 prose max-w-none"
           variants={itemVariants}
           dangerouslySetInnerHTML={{
-            __html:
-              about?.content ||
-              `
-            <p>This is a Remix-based web application that demonstrates modern web development 
-            practices. It features a responsive design, client-side navigation, and integration 
-            with external APIs.</p>
-            <p>The application showcases characters from the Rick and Morty series using the 
-            public Rick and Morty API, with features like search and detailed character views.</p>
-          `,
+            __html: about?.content || "",
           }}
         />
       </motion.section>
@@ -95,54 +87,6 @@ const About = () => {
         >
           {about?.description || "Technologies Used"}
         </motion.h2>
-        <motion.ul className="list-disc pl-6 space-y-2 text-gray-700">
-          {[
-            {
-              tech: "Remix",
-              desc: "A full stack web framework that lets you focus on the user interface",
-            },
-            {
-              tech: "React",
-              desc: "A JavaScript library for building user interfaces",
-            },
-            { tech: "TypeScript", desc: "Typed JavaScript at scale" },
-            { tech: "Tailwind CSS", desc: "A utility-first CSS framework" },
-            {
-              tech: "Framer Motion",
-              desc: "A production-ready motion library for React",
-            },
-            { tech: "Rails API", desc: "Backend API built with Ruby on Rails" },
-            { tech: "TipTap", desc: "Headless rich text editor for React" },
-          ].map((item, index) => (
-            <motion.li key={index} variants={listItemVariants} custom={index}>
-              <span className="font-medium">{item.tech}</span> - {item.desc}
-            </motion.li>
-          ))}
-        </motion.ul>
-      </motion.section>
-
-      <motion.section className="mb-8" variants={itemVariants}>
-        <motion.h2
-          className="text-2xl font-semibold mb-4"
-          variants={itemVariants}
-        >
-          Features
-        </motion.h2>
-        <motion.ul className="list-disc pl-6 space-y-2 text-gray-700">
-          {[
-            "Responsive design that works on desktop and mobile",
-            "Fast page navigation with Remix",
-            "Character search with debounced input",
-            "Detailed character information",
-            "Clean and modern UI with Tailwind CSS",
-            "Smooth animations with Framer Motion",
-            "Content management with TipTap editor",
-          ].map((feature, index) => (
-            <motion.li key={index} variants={listItemVariants} custom={index}>
-              {feature}
-            </motion.li>
-          ))}
-        </motion.ul>
       </motion.section>
     </motion.div>
   );
@@ -171,18 +115,6 @@ const itemVariants = {
       type: "spring",
       stiffness: 100,
       damping: 12,
-    },
-  },
-};
-
-const listItemVariants = {
-  hidden: { x: -10, opacity: 0 },
-  visible: {
-    x: 0,
-    opacity: 1,
-    transition: {
-      type: "spring",
-      stiffness: 100,
     },
   },
 };
