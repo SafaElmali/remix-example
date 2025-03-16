@@ -14,6 +14,10 @@ class UrlUtil {
   static buildAboutUrl() {  
     return `/about`;
   }
+
+  static buildTasksUrl() {
+    return `/tasks`;
+  }
 }
 
 export default UrlUtil;

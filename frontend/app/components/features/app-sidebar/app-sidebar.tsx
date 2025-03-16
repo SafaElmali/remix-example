@@ -1,4 +1,4 @@
-import { Home, PersonStanding, Users } from "lucide-react";
+import { Home, ListTodo, PersonStanding, Users } from "lucide-react";
 
 import {
   Sidebar,
@@ -30,6 +30,11 @@ const items = [
     url: UrlUtil.buildAboutUrl(),
     icon: PersonStanding,
   },
+  {
+    title: "Tasks",
+    url: UrlUtil.buildTasksUrl(),
+    icon: ListTodo,
+  }
 ];
 
 const AppSidebar = () => {
