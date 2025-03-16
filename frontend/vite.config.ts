@@ -24,6 +24,8 @@ export default defineConfig({
           route("/", "routes/_index.tsx");
           route("/rick-and-morty", "routes/rick-and-morty/route.tsx");
           route("/rick-and-morty/:characterId", "routes/rick-and-morty/$characterId/route.tsx");
+          route("/about", "routes/about/route.tsx");
+          route("/about/edit", "routes/about/edit/route.tsx");
         });
       },
     }),
