@@ -8,7 +8,7 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-const Index = () => {
+const HomePage = () => {
   return (
     <div className="flex h-screen items-center justify-center">
       <div className="flex flex-col items-center gap-16">
@@ -54,4 +54,4 @@ const Index = () => {
   );
 };
 
-export default Index;
+export default HomePage;
