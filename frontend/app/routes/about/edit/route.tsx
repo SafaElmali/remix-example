@@ -6,6 +6,7 @@ import {
   useNavigation,
   MetaFunction,
   useFetcher,
+  useBlocker,
 } from "@remix-run/react";
 import type { ActionFunctionArgs } from "@remix-run/node";
 import {
@@ -13,7 +14,7 @@ import {
   updateAboutDetails,
 } from "../_services/about.service";
 import TipTapEditor from "@/components/TipTapEditor";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -123,7 +124,8 @@ const AboutAdmin = () => {
   const navigation = useNavigation();
   const isSubmitting = navigation.state === "submitting";
 
-  // We only need state for the editor content since it's not directly bound to a form field
+  // Track form changes
+  const [formChanged, setFormChanged] = useState(false);
   const [editorContent, setEditorContent] = useState(about.content || "");
   
   // Initialize fetcher for preview functionality
@@ -133,20 +135,30 @@ const AboutAdmin = () => {
   
   // State for dialog open/close
   const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
-  
-  // Handle preview submission
-  const handlePreview = () => {
-    const formData = new FormData();
-    formData.append("title", document.querySelector<HTMLInputElement>("[name='title']")?.value || "");
-    formData.append("description", document.querySelector<HTMLTextAreaElement>("[name='description']")?.value || "");
-    formData.append("content", editorContent);
-    formData.append("intent", "preview");
-    
-    previewFetcher.submit(formData, { method: "post" });
-    
-    // Open the dialog when we start fetching the preview
-    setPreviewDialogOpen(true);
+
+  // Set up blocker
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      formChanged && currentLocation.pathname !== nextLocation.pathname
+  );
+
+  // Handle form changes
+  const handleFormChange = () => {
+    setFormChanged(true);
   };
+
+  // Handle editor content changes
+  const handleEditorChange = (newContent: string) => {
+    setEditorContent(newContent);
+    setFormChanged(true);
+  };
+
+  // Reset form changed state after successful submission
+  useEffect(() => {
+    if (navigation.state === "idle" && !actionData?.error) {
+      setFormChanged(false);
+    }
+  }, [navigation.state, actionData]);
 
   return (
     <div className="max-w-4xl mx-auto p-6">
@@ -167,7 +179,7 @@ const AboutAdmin = () => {
             </div>
           )}
 
-          <Form method="post" className="space-y-6">
+          <Form method="post" className="space-y-6" onChange={handleFormChange}>
             <Input type="hidden" name="aboutId" value={about.id} />
             <Input type="hidden" name="content" value={editorContent} />
 
@@ -203,7 +215,7 @@ const AboutAdmin = () => {
               >
                 <TipTapEditor
                   content={editorContent}
-                  onChange={setEditorContent}
+                  onChange={handleEditorChange}
                 />
               </div>
             </div>
@@ -220,7 +232,18 @@ const AboutAdmin = () => {
                   type="button" 
                   variant="secondary" 
                   disabled={isPreviewLoading}
-                  onClick={handlePreview}
+                  onClick={() => {
+                    const formData = new FormData();
+                    formData.append("title", document.querySelector<HTMLInputElement>("[name='title']")?.value || "");
+                    formData.append("description", document.querySelector<HTMLTextAreaElement>("[name='description']")?.value || "");
+                    formData.append("content", editorContent);
+                    formData.append("intent", "preview");
+                    
+                    previewFetcher.submit(formData, { method: "post" });
+                    
+                    // Open the dialog when we start fetching the preview
+                    setPreviewDialogOpen(true);
+                  }}
                   className="w-32"
                 >
                   {isPreviewLoading ? "Loading..." : "Preview"}
@@ -264,6 +287,39 @@ const AboutAdmin = () => {
                   No preview data available
                 </div>
               )}
+            </DialogContent>
+          </Dialog>
+
+          {/* Navigation blocker dialog */}
+          <Dialog 
+            open={blocker?.state === "blocked" || false} 
+            onOpenChange={(open) => {
+              if (!open && blocker?.state === "blocked") {
+                blocker.reset?.();
+              }
+            }}
+          >
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Unsaved Changes</DialogTitle>
+                <DialogDescription>
+                  You have unsaved changes. Are you sure you want to leave this page?
+                </DialogDescription>
+              </DialogHeader>
+              <div className="flex justify-end space-x-2 mt-4">
+                <Button 
+                  variant="outline" 
+                  onClick={() => blocker?.reset?.()}
+                >
+                  Stay
+                </Button>
+                <Button 
+                  variant="destructive" 
+                  onClick={() => blocker?.proceed?.()}
+                >
+                  Leave
+                </Button>
+              </div>
             </DialogContent>
           </Dialog>
         </CardContent>
