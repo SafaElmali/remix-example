@@ -10,7 +10,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { NavLink } from "@remix-run/react";
+import { Link, NavLink } from "@remix-run/react";
 import UrlUtil from "@/lib/urls";
 
 // Menu items.
@@ -34,7 +34,7 @@ const items = [
     title: "Tasks",
     url: UrlUtil.buildTasksUrl(),
     icon: ListTodo,
-  }
+  },
 ];
 
 const AppSidebar = () => {
@@ -48,15 +48,10 @@ const AppSidebar = () => {
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <NavLink
-                      className={({ isActive }) =>
-                        isActive ? "text-red-500" : ""
-                      }
-                      to={item.url}
-                    >
+                    <Link to={item.url}>
                       <item.icon />
                       <span>{item.title}</span>
-                    </NavLink>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}

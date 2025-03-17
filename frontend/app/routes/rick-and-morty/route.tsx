@@ -148,23 +148,26 @@ const RickAndMortyPage = () => {
         ) : (
           <motion.div
             key="results"
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+            initial="hidden"
+            animate="visible"
+            exit="exit"
             variants={containerVariants}
           >
-            {characters.results.map((character, index) => (
-              <motion.div
-                key={character.id}
-                variants={cardVariants}
-                custom={index}
-                layout
-                initial="hidden"
-                animate="visible"
-                exit="exit"
-                whileHover={{ y: -5, transition: { duration: 0.2 } }}
-              >
-                <CharacterCard character={character} />
-              </motion.div>
-            ))}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {characters.results.map((character, index) => (
+                <motion.div
+                  key={character.id}
+                  variants={cardVariants}
+                  custom={index}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                  whileHover={{ y: -5, transition: { duration: 0.2 } }}
+                >
+                  <CharacterCard character={character} />
+                </motion.div>
+              ))}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
