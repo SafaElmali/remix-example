@@ -27,13 +27,8 @@ import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import UrlUtil from "@/lib/urls";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import { PreviewDialog, type PreviewData } from "./_components/preview-dialog";
+import { NavigationAlertDialog } from "./_components/navigation-alert-dialog";
 
 export const meta: MetaFunction = () => {
   return [
@@ -74,46 +69,35 @@ export const loader = async () => {
 // Action function to handle form submission
 export const action = async ({ request }: ActionFunctionArgs) => {
   const formData = await request.formData();
-  const intent = formData.get("intent");
+  const actionType = formData.get("actionType");
   
-  if (intent === "preview") {
-    // For preview, we just return the data without saving to the database
-    const title = formData.get("title") as string;
-    const description = formData.get("description") as string;
-    const content = formData.get("content") as string;
-    
+  // Extract form data
+  const formValues = {
+    title: formData.get("title") as string,
+    description: formData.get("description") as string,
+    content: formData.get("content") as string,
+  };
+  
+  if (actionType === "preview") {
     return json({
-      preview: {
-        title,
-        description,
-        content,
-      },
+      preview: formValues,
       error: null,
       fields: null,
     });
   }
   
   // Regular save action
-  const title = formData.get("title") as string;
-  const description = formData.get("description") as string;
-  const content = formData.get("content") as string;
   const aboutId = formData.get("aboutId") as string;
 
   try {
-    // Use the service to update about details
-    await updateAboutDetails(parseInt(aboutId), {
-      title,
-      description,
-      content,
-    });
-
+    await updateAboutDetails(parseInt(aboutId), formValues);
     return redirect(UrlUtil.buildAboutUrl());
   } catch (error) {
     console.error("Error updating about data:", error);
     return json({
       preview: null,
       error: "Failed to update about page data",
-      fields: { title, description, content },
+      fields: formValues,
     });
   }
 };
@@ -131,7 +115,7 @@ const AboutAdmin = () => {
   // Initialize fetcher for preview functionality
   const previewFetcher = useFetcher<typeof action>();
   const isPreviewLoading = previewFetcher.state !== "idle";
-  const previewData = previewFetcher.data?.preview;
+  const previewData = previewFetcher.data?.preview as PreviewData | null;
   
   // State for dialog open/close
   const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
@@ -237,7 +221,7 @@ const AboutAdmin = () => {
                     formData.append("title", document.querySelector<HTMLInputElement>("[name='title']")?.value || "");
                     formData.append("description", document.querySelector<HTMLTextAreaElement>("[name='description']")?.value || "");
                     formData.append("content", editorContent);
-                    formData.append("intent", "preview");
+                    formData.append("actionType", "preview");
                     
                     previewFetcher.submit(formData, { method: "post" });
                     
@@ -257,71 +241,24 @@ const AboutAdmin = () => {
           </Form>
           
           {/* Preview Dialog */}
-          <Dialog open={previewDialogOpen} onOpenChange={setPreviewDialogOpen}>
-            <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Preview</DialogTitle>
-                <DialogDescription>
-                  Preview of how your About page will look
-                </DialogDescription>
-              </DialogHeader>
-              
-              {isPreviewLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-                </div>
-              ) : previewData ? (
-                <div className="mt-4">
-                  <h1 className="text-3xl font-bold mb-2">{previewData.title}</h1>
-                  <p className="text-gray-600 mb-6">{previewData.description}</p>
-                  
-                  <Separator className="my-4" />
-                  
-                  <div 
-                    className="prose max-w-none"
-                    dangerouslySetInnerHTML={{ __html: previewData.content }}
-                  />
-                </div>
-              ) : (
-                <div className="py-4 text-center text-gray-500">
-                  No preview data available
-                </div>
-              )}
-            </DialogContent>
-          </Dialog>
+          <PreviewDialog
+            open={previewDialogOpen}
+            onOpenChange={setPreviewDialogOpen}
+            isLoading={isPreviewLoading}
+            previewData={previewData}
+          />
 
           {/* Navigation blocker dialog */}
-          <Dialog 
-            open={blocker?.state === "blocked" || false} 
+          <NavigationAlertDialog 
+            open={blocker?.state === "blocked" || false}
             onOpenChange={(open) => {
               if (!open && blocker?.state === "blocked") {
                 blocker.reset?.();
               }
             }}
-          >
-            <DialogContent className="max-w-md">
-              <DialogHeader>
-                <DialogTitle>Unsaved Changes</DialogTitle>
-                <DialogDescription>
-                  You have unsaved changes. Are you sure you want to leave this page?
-                </DialogDescription>
-              </DialogHeader>
-              <div className="flex justify-end space-x-2 mt-4">
-                <Button 
-                  variant="outline" 
-                  onClick={() => blocker?.reset?.()}
-                >
-                  Stay
-                </Button>
-                <Button 
-                  variant="destructive" 
-                  onClick={() => blocker?.proceed?.()}
-                >
-                  Leave
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+            onStay={() => blocker?.reset?.()}
+            onLeave={() => blocker?.proceed?.()}
+          />
         </CardContent>
       </Card>
     </div>
