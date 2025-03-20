@@ -10,7 +10,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { Link, NavLink } from "@remix-run/react";
+import { Link } from "@remix-run/react";
 import UrlUtil from "@/lib/urls";
 
 // Menu items.
@@ -34,6 +34,11 @@ const items = [
     title: "Tasks",
     url: UrlUtil.buildTasksUrl(),
     icon: ListTodo,
+  },
+  {
+    title: "Users",
+    url: UrlUtil.buildUsersUrl(),
+    icon: Users,
   },
 ];
 

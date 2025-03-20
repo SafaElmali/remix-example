@@ -18,6 +18,10 @@ class UrlUtil {
   static buildTasksUrl() {
     return `/tasks`;
   }
+
+  static buildUsersUrl() {
+    return `/users`;
+  }
 }
 
 export default UrlUtil;
